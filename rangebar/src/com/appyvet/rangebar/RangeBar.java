@@ -162,6 +162,8 @@ public class RangeBar extends View {
 
     private boolean mIsRangeBar = true;
 
+    private boolean mIsInverseRangeBar = true;
+
     private float mPinPadding = DEFAULT_PIN_PADDING_DP;
 
     private float mBarPaddingBottom = DEFAULT_BAR_PADDING_BOTTOM_DP;
@@ -244,6 +246,7 @@ public class RangeBar extends View {
         bundle.putFloat("PIN_PADDING", mPinPadding);
         bundle.putFloat("BAR_PADDING_BOTTOM", mBarPaddingBottom);
         bundle.putBoolean("IS_RANGE_BAR", mIsRangeBar);
+        bundle.putBoolean("IS_INVERSE_RANGE_BAR", mIsInverseRangeBar);
         bundle.putBoolean("ARE_PINS_TEMPORARY", mArePinsTemporary);
         bundle.putInt("LEFT_INDEX", mLeftIndex);
         bundle.putInt("RIGHT_INDEX", mRightIndex);
@@ -281,6 +284,7 @@ public class RangeBar extends View {
             mPinPadding = bundle.getFloat("PIN_PADDING");
             mBarPaddingBottom = bundle.getFloat("BAR_PADDING_BOTTOM");
             mIsRangeBar = bundle.getBoolean("IS_RANGE_BAR");
+            mIsInverseRangeBar = bundle.getBoolean("IS_INVERSE_RANGE_BAR");
             mArePinsTemporary = bundle.getBoolean("ARE_PINS_TEMPORARY");
 
             mLeftIndex = bundle.getInt("LEFT_INDEX");
@@ -396,7 +400,10 @@ public class RangeBar extends View {
 
         mBar.draw(canvas);
 
-        if (mIsRangeBar) {
+        if (mIsInverseRangeBar) {
+            mConnectingLine.draw(canvas, mLeftThumb, getMarginLeft(), mRightThumb, getWidth() - getMarginLeft());
+            mLeftThumb.draw(canvas);
+        } else if (mIsRangeBar) {
             mConnectingLine.draw(canvas, mLeftThumb, mRightThumb);
             mLeftThumb.draw(canvas);
         } else {
@@ -685,9 +692,22 @@ public class RangeBar extends View {
      */
     public void setRangeBarEnabled(boolean isRangeBar) {
         mIsRangeBar = isRangeBar;
+        if ( ! mIsRangeBar) {
+            mIsInverseRangeBar = false;
+        }
         invalidate();
     }
 
+    /**
+     * Set if the view is a inverse range bar
+     *
+     * @param isInverseRangeBar Boolean - true sets it to inverse rangebar.
+     */
+    public void setInverseRangeBarEnabled(boolean isInverseRangeBar) {
+        mIsInverseRangeBar = isInverseRangeBar;
+        mIsRangeBar = true;
+        invalidate();
+    }
 
     /**
      * Set if the pins should dissapear after released
@@ -939,6 +959,15 @@ public class RangeBar extends View {
     }
 
     /**
+     * Gets the type of the bar.
+     *
+     * @return true if inverse rangebar, false otherwise.
+     */
+    public boolean isInverseRangeBar() {
+        return mIsInverseRangeBar;
+    }
+
+    /**
      * Gets the value of the left pin.
      *
      * @return the string value of the left pin.
@@ -1017,6 +1046,7 @@ public class RangeBar extends View {
      * @param attrs   AttributeSet from the constructor.
      */
     private void rangeBarInit(Context context, AttributeSet attrs) {
+
         //TODO tick value map
         if (mTickMap == null) {
             mTickMap = new HashMap<Float, String>();
@@ -1461,7 +1491,7 @@ public class RangeBar extends View {
     public interface OnRangeBarChangeListener {
 
         public void onRangeChangeListener(RangeBar rangeBar, int leftPinIndex,
-                int rightPinIndex, String leftPinValue, String rightPinValue);
+                                          int rightPinIndex, String leftPinValue, String rightPinValue);
     }
 
     public interface PinTextFormatter {
